@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Debugging Node.js Memory Leaks"
+title:  "Debugging Node.js Memory Leaks - A Walkthrough"
 date:   2016-05-07 16:13:25 +0100
 ---
 
