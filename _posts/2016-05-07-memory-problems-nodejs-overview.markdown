@@ -21,10 +21,9 @@ To be able to tell if you have a problem, and to be able to tell if your changes
 
 `$ ps -p $(pgrep node) -o rss,vsz`
 
-```
-   RSS      VSZ
-  2376  3043880
-```
+     RSS      VSZ
+    2376  3043880
+
 
 This tells that the resident set size (`RSS`) is 2376 KB and the virtual set size (`VSZ`) is 3043880 KB.
 
@@ -48,13 +47,11 @@ We can use `top` to monitor our process in real-time:
 We can also use `process.memoryUsage()` to get get a measurement from
 within our Node process:
 
-```
-$ node
-> process.memoryUsage()
-{ rss: 13000704,
-  heapTotal: 6147328,
-  heapUsed: 2705800 }
-```
+    $ node
+    > process.memoryUsage()
+    { rss: 13000704,
+      heapTotal: 6147328,
+      heapUsed: 2705800 }
 
 Where `rss` is the resident set, and `heapTotal` and `heapUsed` refer to V8's memory usage.
 
@@ -62,9 +59,9 @@ Where `rss` is the resident set, and `heapTotal` and `heapUsed` refer to V8's me
 
 We can trace GC activity in our Node program if we run it with the `--trace-gc` flag (and `--trace-gc-verbose` if we want a lot of detail):
 
-```bash
-node --trace-gc --trace-gc-verbose
-```
+
+    node --trace-gc --trace-gc-verbose
+
 
 If we then run something like this in the Node REPL:
 
@@ -74,18 +71,18 @@ setInterval(() => new Array(1000).join('hello gc!'));
 
 We should see a lot of output that looks like this:
 
-```
-[17572:0x101804600]    44609 ms: Scavenge 6.7 (43.9) -> 5.7 (43.9) MB, 0.1 / 0 ms [allocation failure].
-[17572:0x101804600] Memory allocator,   used:  44996 KB, available: 1454140 KB
-[17572:0x101804600] New space,          used:      0 KB, available:   1007 KB, committed:   2015 KB
-[17572:0x101804600] Old space,          used:   4323 KB, available:     21 KB, committed:   4894 KB
-[17572:0x101804600] Code space,         used:   1271 KB, available:      1 KB, committed:   2266 KB
-[17572:0x101804600] Map space,          used:    292 KB, available:      0 KB, committed:   1070 KB
-[17572:0x101804600] Large object space, used:      0 KB, available: 1453099 KB, committed:      0 KB
-[17572:0x101804600] All spaces,         used:   5887 KB, available: 1454129 KB, committed:  10246 KB
-[17572:0x101804600] External memory reported:      8 KB
-[17572:0x101804600] Total time spent in GC  : 44.4 ms
-```
+
+    [17572:0x101804600]    44609 ms: Scavenge 6.7 (43.9) -> 5.7 (43.9) MB, 0.1 /     0 ms [allocation failure].
+    [17572:0x101804600] Memory allocator,   used:  44996 KB, available: 1454140 KB
+    [17572:0x101804600] New space,          used:      0 KB, available:   1007     KB, committed:   2015 KB
+    [17572:0x101804600] Old space,          used:   4323 KB, available:     21     KB, committed:   4894 KB
+    [17572:0x101804600] Code space,         used:   1271 KB, available:      1     KB, committed:   2266 KB
+    [17572:0x101804600] Map space,          used:    292 KB, available:      0     KB, committed:   1070 KB
+    [17572:0x101804600] Large object space, used:      0 KB, available: 1453099     KB, committed:      0 KB
+    [17572:0x101804600] All spaces,         used:   5887 KB, available: 1454129     KB, committed:  10246 KB
+    [17572:0x101804600] External memory reported:      8 KB
+    [17572:0x101804600] Total time spent in GC  : 44.4 ms
+
 
 We can also expose the GC to our JS code with the `--expose-gc` flag to be able to force a GC cycle from our code.
 
@@ -144,22 +141,16 @@ The two columns that are of interest to us when tracking down memory leaks are `
 
 How do we take these snapshots?
 
-1. Load `heapdump` in your program:
-  ```javascript
-  // require heapdump at the top of your index.js
-  require('heapdump');
-  ```
+1. Requre `heapdump` at the top of your `index.js`:
 
-2. Send a `SIGUSR2` signal to the running process to tell `heapdump` to take a snapshot:
+    ```
+    require('heapdump');
+    ```
 
-  ```sh
-  kill -SIGUSR2 $PID
-  ```
+2. Send a `SIGUSR2` signal to the running process to tell `heapdump` to take a snapshot with: `kill -SIGUSR2 $PID`
+  This will write a heap snapshot file to the working directory of our process in a file with a name like `heapdump-706203888.138768.heapsnapshot`.
+3. If our program is known to have a memory leak, we can run a [load-test](https://artillery.io) against it to induce it, watch memory usage go up, and then take another snapshot (which will force-run the GC to make sure only the objects that could not be collected are shown in the snapshot).
 
-  This will write a heap snapshot file to the working directory of our process (in a file with a name like `heapdump-706203888.138768.heapsnapshot`).
-
-3. If our program is known to have a memory leak, we can run a load-test against it to induce it, watch memory usage go up, and then take another snapshot (which will force-run the GC to make sure only the objects that could not be collected are shown in the snapshot).
-
-The difference between this snapshot and the baseline snapshot will be the objects that are hanging around and not being reclaimed by the GC.
+  The difference between this snapshot and the baseline snapshot will be the objects that are hanging around and not being reclaimed by the GC.
 
 For a complete exercise in debugging a memory leak, see [Debugging Node.js Memory Leaks - A Walkthrough](/debugging-nodejs-memory-leaks/).
