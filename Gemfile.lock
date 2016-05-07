@@ -122,6 +122,7 @@ DEPENDENCIES
   github-pages
   jekyll
   jekyll-paginate
+  jekyll-watch
 
 BUNDLED WITH
    1.12.3
